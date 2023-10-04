@@ -1,11 +1,13 @@
 import socket as sck
-import turtle
+import time
+
 import AlphaBot
+SEPARATOR = ";"
 
 
 def main():
     s = sck.socket(sck.AF_INET, sck.SOCK_STREAM)
-    my_address = ("127.0.0.1", 8000)
+    my_address = ("0.0.0.0", 8000)
     s.bind(my_address)
     s.listen()
 
@@ -17,42 +19,53 @@ def main():
         print(f"ricevuto {data} da {address}")
 
         dataStr = data.decode()
-        comando = dataStr.split(";")
+        comand = dataStr.split(SEPARATOR)
+        comando = comand[0]
+        duration = int(comand[1])
 
-        if comando[0] == "-1":
+        if comando == "-1":
             print("fine")
             conn.sendall("-1".encode())
             break
 
-        elif not comando[1].isnumeric() or int(comando[1]) <= 0:
+        elif duration <= 0:
             conn.sendall("error".encode())
 
         else:
-            comando[1] = int(comando[1])
 
-            if comando[0] == "f":
-                bottino.forward(comando[1])
-                conn.sendall("ok".encode())
-            elif comando[0] == "b":
-                bottino.backward(comando[1])
-                conn.sendall("ok".encode())
-            elif comando[0] == "l":
-                bottino.left(int(comando[1]))
+            if comando.lower() == "f":
+                bottino.forward()
+                time.sleep(duration)
+                bottino.stop()
+
                 conn.sendall("ok".encode())
 
-            elif comando[0] == "r":
-                bottino.right(int(comando[1]))
+            elif comando.lower() == "b":
+                bottino.backward()
+                time.sleep(duration)
+                bottino.stop()
+
                 conn.sendall("ok".encode())
 
+            elif comando.lower() == "l":
+                bottino.left()
+                time.sleep(duration)
+                bottino.stop()
 
+                conn.sendall("ok".encode())
+
+            elif comando.lower() == "r":
+                bottino.right()
+                time.sleep(duration)
+                bottino.stop()
+
+                conn.sendall("ok".encode())
 
             else:
                 conn.sendall("error".encode())
 
     print("uscito")
-
     conn.close()
-    turtle.done()
 
 
 if __name__ == "__main__":
